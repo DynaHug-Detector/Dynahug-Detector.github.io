@@ -1,5 +1,6 @@
 # DynaHug-Detector
 
+- [GitHub Repository](https://github.com/DynaHug-Detector/DynaHug)
 - [Paper](./assets/DynaHug-paper.pdf)
 - [Website](https://dynahug-detector.github.io/) 
 
