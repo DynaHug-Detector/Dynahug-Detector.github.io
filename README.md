@@ -1,6 +1,5 @@
 # DynaHug-Detector
 
-- [GitHub Repository](https://github.com/DynaHug-Detector/DynaHug)
 - [Paper](./assets/DynaHug-paper.pdf)
 - [Website](https://dynahug-detector.github.io/) 
 
@@ -80,7 +79,7 @@ DynaHug/
 - **data/malicious_dataset/** - Malicious models from various sources (MALHUG, Pickleball, HF API detected models). Injected models are downloaded from GCS during runtime and their trace are collected due to the lack of space to store them all on local disk.
 - **classifier** - Classifier related code and data.
 - **classifier/data/** - Structured files for data to be used in classifier training or evaluation. There are folders within this directory named after the dataset and feature combination used for training. Each of these folders contain CSV files of the unseen test set on which the trained models were evaluated on.
-- **classifier/models/** - A folder containing all the pre-trained classifier models. It contains sub-folders with the folder named after the dataset and feature combination used for training. Folders with names ending with `_best` contain the fully trained and tuned model pickle files along with SHAP analysis plots on the unseen test sets (during training).
+- **classifier/models/** - A folder containing all the pre-trained classifier models. The models are divided based on the task tag of PTMs it was trained on. It contains sub-folders with the folder named after the dataset and feature combination used for training. Folders with names ending with `_best` contain the fully trained and tuned model pickle files along with SHAP analysis plots on the unseen test sets (during training).
 - **metadata/** - Checksum logs, model evaluation results, training data model names, and other metadata CSVs.
 - **metadata/models** - Contains the CSVs which list the model names detected as anomalies during evaluation for each task-tag. 
 - **malicious_detection_logs/** - Logs from security detection tools (ProtectAI, AVScan, ClamAV, HF Picklescan, VirusTotal) (scanning still in progress).
@@ -96,8 +95,8 @@ logs
 └── malicious-straces
     └── model
         └── text-generation
-          ├── strace_logs_star23__sm-1--pytorch_model.bin_count.log
-          └── strace_logs_star23__sm-1--pytorch_model.bin_logs.log
+            ├── strace_logs_star23__sm-1--pytorch_model.bin_count.log
+            └── strace_logs_star23__sm-1--pytorch_model.bin_logs.log
 ``` 
 All PyTorch model deserialization strace logs are stored in the models directory. The logs are divided into clean and malicious straces. Within the clean-straces directory, logs are organized by task tag, with each task-tag subdirectory containing additional subfolders named according to the function associated with the corresponding strace logs. Each of these function-specific folders contains the strace log files, which follow the naming convention: `strace_logs_<repo_name>--<file_path>_<count|logs>.log` where the file_path represented the PyTorch file to be deserialized separated by `__` to represent a `/` (e.g., `Ritori__Yura_GPT__pytorch_model.bin` is the same as `Ritori__Yura_GPT/pytorch_model.bin`). Files ending with `_count.log` contain summarized syscall counts, while those ending with `_logs.log` contain the complete strace output.
 
@@ -226,12 +225,12 @@ Key dependencies include:
 
 First, clone the repository: 
 ```bash
-git clone https://github.com/DynaHug-Detector/Dynahug-Detector.github.io.git
+git clone https://github.com/DynaHug-Detector/DynaHug.git
 ```
 
 Then cd into the project directory:
 ```bash 
-cd Dynahug-Detector.github.io
+cd DynaHug
 ```
 
 Note: All the below commands assume you are in the project root directory.
@@ -422,4 +421,4 @@ text-classification models:
 
 non-clustered models:
 
-1
+13. DynaHug (non-clustered): `classifier/models/all/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01`
