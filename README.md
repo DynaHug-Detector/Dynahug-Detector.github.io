@@ -36,7 +36,7 @@ positively to DYNAHUG’s effectiveness. This work motivates
 the need for dynamic analysis in malicious PTM detection.
 
 ## Workflow Diagram
-<img alt="SafeFuzzer-Workflow" src="./assets/SafeFuzzer-Workflow.png" />
+<img alt="Workflow" src="./assets/Workflow-Diagram.png" />
 
 ## Datasets 
 We use a total of 18,163 models for the paper. We train DynaHug on the top 2,000 models, sorted by likes from HuggingFace. We also employ datasets from Malhug (84) and PickleBall (4) as part of our malicious set, totalling 88 real malicious models.
@@ -57,11 +57,11 @@ collected from dynamic analysis as an input. The LLM of choice was [Llama-3.1-8B
 ## High-level Overview of Project Directory
 
 ```markdown
-DynaHug/
 ├── assets
 ├── classifier
 ├── data
 ├── Dockerfile
+├── experiments
 ├── LICENSE
 ├── main.py
 ├── malicious_detection_logs
