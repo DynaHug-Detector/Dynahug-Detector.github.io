@@ -43,12 +43,12 @@ We use a total of 18,163 models for the paper. We train DynaHug on the top 2,000
 Further, we injected 2,000 models with malicious payloads to train and evaluate our model. The rest of the models were part of the ablation study (RQ3) and Clustering test (RQ4).
 
 ## Artifact location
-The artifacts including the pre-trained classifier models, strace logs, structured CSVs/parquet files for features, evaluation results and other metadata can be found in the [Zenodo](https://zenodo.org/records/17695710) setup.
+The artifacts including the pre-trained classifier models, strace logs, structured CSVs/parquet files for features, evaluation results and other metadata can be found in the [Zenodo](https://zenodo.org/records/17695710).
 
 ## Baselines 
 We compare DynaHug to the current state-of-the-art (RQ2). We
 evaluate existing open-source detectors encompassing both
-static and dynamic analysis. We evaluate [PickleScan](https://github.com/mmaitre314/picklescan), [ModelScan](https://github.com/protectai/modelscan) and [Fickling](https://github.com/trailofbits/fickling) as our static analysis tools, and [ModelTracer](https://github.com/s2e-lab/hf-model-analyzer) as our Dynamic analysis tool.
+<!-- static and dynamic analysis. We evaluate [PickleSca]n(https://github.com/mmaitre314/picklescan), [ModelScan](https://github.com/protectai/modelscan) and [Fickling](https://github.com/trailofbits/fickling) as our static analysis tools, and [ModelTracer](https://github.com/s2e-lab/hf-model-analyzer) as our Dynamic analysis tool. -->
 Furthermore, We also evaluate whether
 LLMs can serve as an effective malicious PTM detector by
 replacing our classifier with an LLM and using the raw traces
@@ -57,6 +57,7 @@ collected from dynamic analysis as an input. The LLM of choice was [Llama-3.1-8B
 ## High-level Overview of Project Directory
 
 ```markdown
+DynaHug/
 ├── assets
 ├── classifier
 ├── data
@@ -104,6 +105,7 @@ All PyTorch model deserialization strace logs are stored in the models directory
 The malicious-straces directory follows a similar structure except that the task-tags also indicate the function for which the strace logs were collected (e.g., MALHUG_injected_text-classification).
 - **output/** - Standard output during the the dynamic analysis runs. 
 - **src/** - Source code folder containing all the core logic for downloading, dynamic analysis, archival and strace parsing.
+- **experiments/** - Folder containing the static analysis tools for training the static DynaHug classifier and injected scripts used for the evaluation dataset.
 
 ## Notations
 - <> - Any value inside the angle brackets are placeholders for the user to replace with actual values.
@@ -257,7 +259,7 @@ The main pipeline is orchestrated through `main.py` with different modes and com
 ```bash
 uv run main.py --tag <tag> [options]
 ```
-Here, the `<tag>` refers to the model task/category you want to analyze (e.g., 'text-generation', 'text-classification') in Hugging Face. We have compiled an exhaustive list of tags present in Hugging Face [here](link-to-static-repo).
+Here, the `<tag>` refers to the model task/category you want to analyze (e.g., 'text-generation', 'text-classification') in Hugging Face. We have compiled an exhaustive list of tags present in Hugging Face [here](https://github.com/DynaHug-Detector/DynaHug/blob/main/experiments/huggingface_model_categories.json).
 
 Although, these operations can take quite a while to execute due to which creating a detached session with `tmux` or `nohup` is recommended:
 For `tmux`:
