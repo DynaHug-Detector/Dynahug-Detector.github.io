@@ -77,8 +77,9 @@ DynaHug/
 ```
 
 - **assets/** - Any assets that would be useful for understanding the project. Currently, it contains the PDF of the DynaHug paper and the workflow diagram.
-- **data/clean_dataset/** - Benign models and datasets.
-- **data/malicious_dataset/** - Malicious models from various sources (MALHUG, Pickleball, HF API detected models). Injected models are downloaded from GCS during runtime and their trace are collected due to the lack of space to store them all on local disk.
+- **data/clean_dataset/** - Folder where benign models/datasets are downloaded when the download component in the [pipeline](#pipeline-control) is triggered.
+- **data/malicious_dataset/** - Folder where malicious models/datasets are downloaded when the download component in the [pipeline](#pipeline-control) is triggered. It is also used to store malicious datasets like models from MALHUG, PickleBall and HF API detections. However, these models are not provided in the GitHub since they are exceed the GitHub commit size limit. The original datasets can be found in the artifact links of the respective papers. 
+<!-- Malicious models from various sources (MALHUG, Pickleball, HF API detected models). Injected models are downloaded from GCS during runtime and their trace are collected due to the lack of space to store them all on local disk. -->
 - **classifier** - Classifier related code and data.
 - **classifier/data/** - Structured files for data to be used in classifier training or evaluation. There are folders within this directory named after the dataset and feature combination used for training. Each of these folders contain CSV files of the unseen test set on which the trained models were evaluated on.
 - **classifier/models/** - A folder containing all the pre-trained classifier models. The models are divided based on the task tag of PTMs it was trained on. It contains sub-folders with the folder named after the dataset and feature combination used for training. Folders with names ending with `_best` contain the fully trained and tuned model pickle files along with SHAP analysis plots on the unseen test sets (during training).
