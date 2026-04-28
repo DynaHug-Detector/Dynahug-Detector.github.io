@@ -20,33 +20,33 @@ PickleScan) rely on rules, heuristics, or static analysis, but ignore runtime mo
 malicious models due to under-approximation (blacklisting)
 or miscategorize benign models due to over-approximation
 (static analysis or whitelisting). To address this challenge,
-we propose a novel technique (DYNAHUG) which detects
+we propose a novel technique (DynaHug) which detects
 malicious PTMs by learning the behavior of benign PTMs
-using dynamic analysis and machine learning (ML). DYNAHUG
+using dynamic analysis and machine learning (ML). DynaHug
 trains an ML classifier (one-class SVM (OCSVM)) on the
 runtime behaviours of task-specific benign models. We evaluate
-DYNAHUG using over 18,000 benign and malicious PTMs from
+DynaHug using over 25,000 benign and malicious PTMs from
 different sources including Hugging Face and MALHUG. We
-also compare DYNAHUG to several state-of-the-art detectors
+also compare DynaHug to several state-of-the-art detectors
 including static, dynamic and LLM-based detectors. Results
-show that DYNAHUG is up to 44% more effective than existing
-baselines. Our ablation study demonstrates that our design
+show that DynaHug is up to 44% more effective than existing
+baselines in terms of F1-score.. Our ablation study demonstrates that our design
 decisions (dynamic analysis, OCSVM, clustering) contribute
-positively to DYNAHUG’s effectiveness. This work motivates
+positively to DynaHug’s effectiveness. This work motivates
 the need for dynamic analysis in malicious PTM detection.
 
 ## Workflow Diagram
 <img alt="Workflow" src="./assets/Workflow-Diagram.png" />
 
 ## Datasets 
-We use a total of 18,163 models for the paper. We train DynaHug on the top 2,000 models, sorted by likes from HuggingFace. We also employ datasets from Malhug (84) and PickleBall (4) as part of our malicious set, totalling 88 real malicious models.
+We use a total of 25,108 models for the paper. We train DynaHug on the top 2,000 models, sorted by likes from HuggingFace. We also employ datasets from Malhug (84) and PickleBall (4) as part of our malicious set, totalling 88 real malicious models.
 Further, we injected 2,000 models with malicious payloads to train and evaluate our model. The rest of the models were part of the ablation study (RQ3) and Clustering test (RQ4).
 
 ## Artifact location
 The artifacts including the pre-trained classifier models, strace logs, structured CSVs/parquet files for features, evaluation results and other metadata can be found in the [Zenodo](https://zenodo.org/records/17695710).
 
 ## Baselines 
-We compare DynaHug to the current state-of-the-art (RQ2). We
+We compare DynaHug to the current state-of-the-art (RQ2), results for which can be reproduced as detailed in the [Reproducing Results section](#reproducing-results). We
 evaluate existing open-source detectors encompassing both
 <!-- static and dynamic analysis. We evaluate [PickleSca]n(https://github.com/mmaitre314/picklescan), [ModelScan](https://github.com/protectai/modelscan) and [Fickling](https://github.com/trailofbits/fickling) as our static analysis tools, and [ModelTracer](https://github.com/s2e-lab/hf-model-analyzer) as our Dynamic analysis tool. -->
 Furthermore, We also evaluate whether
@@ -274,7 +274,7 @@ or
 nohup uv run main.py --tag <tag> [options] &
 ```
 
-### Running Crawling + Dynamic Analysis + Archival Pipeline
+### Running Crawling and Dynamic Analysis Pipeline
 
 **For benign models (Training or Evaluation Test set Collection):**
 ```bash
@@ -363,6 +363,108 @@ Also, note that the `--best-models` argument should point to the directory conta
 
 Refer to the [Models from the paper](#models-from-the-paper) section below for the paths of pre-trained models used in the DynaHug paper.
 
+
+## Reproducing Results
+
+### RQ1: How effective is DynaHug in detecting malicious PTMs?
+
+To verify the effectiveness of DynaHug on multiple clusters. Run the following:
+
+`text-generation` cluster:
+
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+`text-classification` cluster:
+
+```bash
+uv run classifier/svm.py --tag text-classification --evaluate --feature-type presence frequency --best-models classifier/models/text-classification/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01 --analysis-type dynamic
+```
+
+`feature-extraction` cluster: 
+
+```bash
+uv run classifier/svm.py --tag feature-extraction --evaluate --feature-type presence frequency --best-models classifier/models/feature-extraction/2000_benign_data_presence_frequency_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01 --analysis-type dynamic
+```
+
+### RQ2: How does DynaHug compare to the SOTA detectors?
+
+To see the performance of DynaHug against the SOTA baselines (PickleScan, ModelTracer, etc.)
+
+Running DynaHug:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For running the rest of the open-source SOTA scanners, you can run:
+
+```bash
+uv run experiments/scripts/scan_directory.py --dir <directory-to-scan>
+```
+
+where `--dir` is the path to the directory containing the `.bin`/`pickle` file to scan on. However, this would require the model to be locally downloaded. They could be downloaded manually through `snapshot_download` from the Hugging Face python library (`huggingface_hub`) or you could use the download component in our [crawling script](#running-crawling-and-dynamic-analysis-pipeline).
+
+### RQ3: What are the contributions of our design decision (e.g., static vs. dynamic features) to the performance of DynaHug?
+
+To test our approach on static opcodes and hybrid setting, run:
+
+For DynaHug on Dynamic (default) setting:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For DynaHug on Static setting:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_static_best/OneClassSVM/params-gamma_0.01_kernel_linear_nu_0.01/ --analysis-type dynamic
+```
+
+For DynaHug on Hybrid setting:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_hybrid_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.01_kernel_rbf_nu_0.04/ --analysis-type dynamic
+```
+
+### RQ4: What is the impact of clustering on DynaHug’s performance? How sensitive is DynaHug to different training dataset sizes?
+
+To reproduce the results for the effectiveness of clustering, run the below commands and look for `Dynahug_Internal_benign_test_set` and `Dynahug_Internal_test_set` in the program output:
+
+For DynaHug `text-generation`:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For DynaHug `text-classification`:
+```bash
+uv run classifier/svm.py --tag text-classification --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For DynaHug `feature-extraction`:
+```bash
+uv run classifier/svm.py --tag feature-extraction --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For DynaHug `non-clustered`:
+```bash
+uv run classifier/svm.py --tag all --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For comparing performance of DynaHug on different training dataset sizes:
+
+For dataset size 1000:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/1000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For dataset size 2000:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
+For dataset size 3000:
+```bash
+uv run classifier/svm.py --tag text-generation --evaluate --feature-type presence frequency --best-models classifier/models/text-generation/3000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01/ --analysis-type dynamic
+```
+
 ## Usage 
 
 ### Core Files
@@ -423,6 +525,10 @@ text-classification models:
 
 12. DynaHug (text-classification): `classifier/models/text-classification/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01` 
 
+`feature-extraction` models:
+
+13. DynaHug (feature-extraction): `classifier/models/feature-extraction/2000_benign_data_presence_frequency_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01`
+
 non-clustered models:
 
-13. DynaHug (non-clustered): `classifier/models/all/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01`
+14. DynaHug (non-clustered): `classifier/models/all/2000_benign_data_presence_frequency_new_logs_std_scaler_nomean_best/OneClassSVM/params-gamma_0.1_kernel_rbf_nu_0.01`
